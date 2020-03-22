@@ -9,150 +9,23 @@
 #include <tuple>
 #include <cmath>
 #include <vector>
-
+#include "2DL.cpp"
 using namespace std;
 
-struct point{
-    double x;
-    double y;
-};
 
-struct color{
-    double red;
-    double green;
-    double blue;
-};
-
-struct Line2D{
-    point p1;
-    point p2;
-    color Color;
-};
-
-using Lines2D = vector<Line2D>;
-
-//draw lines with real coordinates
-img::EasyImage draw2DLines(Lines2D &lines, const int size)
-{
-
-    //find X_min, X_max, Y_min, Y_max
-    double
-    x_min = lines[0].p1.x,
-    x_max = lines[0].p1.x,
-    y_min = lines[0].p1.y,
-    y_max = lines[0].p1.y;
-
-    for (Line2D line : lines)
-    {
-        if (line.p1.x < x_min){x_min = line.p1.x;}
-        if (line.p2.x < x_min){x_min = line.p2.x;}
-        if (line.p1.x > x_max){x_max = line.p1.x;}
-        if (line.p2.x > x_max){x_max = line.p2.x;}
-        if (line.p1.y < y_min){y_min = line.p1.y;}
-        if (line.p2.y < y_min){y_min = line.p2.y;}
-        if (line.p1.y > y_max){y_max = line.p1.y;}
-        if (line.p2.y > y_max){y_max = line.p2.y;}
-    }
-
-    //find the range
-    double
-    x_range = x_max - x_min,
-    y_range = y_max - y_min;
-
-
-    //calculate the size of the image
-    double
-    image_x = (size * x_range)/max(x_range,y_range),
-    image_y = (size * y_range)/(max(x_range,y_range));
-
-    //scale
-    double d = (0.95 * image_x)/x_range;
-
-    for (Line2D &line: lines)
-    {
-        line.p1.x *= d;
-        line.p1.y *= d;
-        line.p2.x *= d;
-        line.p2.y *= d;
-
-    }
-
-    //move the lines
-    double
-    DC_x = d * (x_min + x_max)/2,
-    DC_y = d * (y_min + y_max)/2,
-    dx = (image_x/2)  - DC_x,
-    dy = (image_y/2) - DC_y;
-
-    for (Line2D &line: lines)
-    {
-        line.p1.x += dx;
-        line.p1.y += dy;
-        line.p2.x += dx;
-        line.p2.y += dy;
-
-    }
-
-    //draw the lines
-    img::EasyImage image((int)image_x,(int)image_y);
-    for (Line2D line: lines)
-    {
-           double m = (line.p2.y - line.p1.y)/(line.p2.x - line.p1.x);
-           if ((0 < m && m <= 1.0)||(-1<= m && m < 0.0))
-           {
-               for (int i = 0; i < line.p2.x - line.p1.x; i++)
-               {
-                   double xi = line.p1.x + i;
-                   double yi = round(line.p1.y + m * i);
-
-                   image((int)xi,(int)yi).red = line.Color.red;
-                   image((int)xi,(int)yi).green = line.Color.green;
-                   image((int)xi,(int)yi).blue = line.Color.blue;
-               }
-           }
-           else if (m > 1)
-           {
-               for (int i = 0; i < line.p2.y-line.p1.y; i++)
-               {
-                   double yi = line.p1.y + i;
-                   double xi = round(line.p1.x + i/m);
-
-                   image((int)xi,(int)yi).red = line.Color.red;
-                   image((int)xi,(int)yi).green = line.Color.green;
-                   image((int)xi,(int)yi).blue = line.Color.blue;
-               }
-           }
-           else if (m<-1)
-           {
-               for (int i = 0; i < line.p1.y - line.p2.y; i++)
-               {
-                   double yi = line.p1.y - i;
-                   double xi = round(line.p1.x - i/m);
-
-                   image((int)xi,(int)yi).red = line.Color.red;
-                   image((int)xi,(int)yi).green = line.Color.green;
-                   image((int)xi,(int)yi).blue = line.Color.blue;
-               }
-           }
-    }
-    return image;
-}
-
-img::EasyImage generate_image(const ini::Configuration &configuration)
-{
+img::EasyImage generate_image(const ini::Configuration &configuration){
 
     if (configuration["General"]["type"].as_string_or_die() == "2DLSystem") {
-        Lines2D lines;
-        Line2D l1 = {{0,   -70},
-                     {60,   60},
-                     {255, 0, 0}};
-        Line2D l2 = {{60, 60},
-                     {120, 0},
-                     {0, 255, 0}};
+        string filename = configuration["2DLSystem"]["inputfile"].as_string_or_die();
+        vector<double> col = configuration["2DLSystem"]["color"];
+        tuple <double,double,double> color;
+        get<0>(color) = col[0];
+        get<1>(color) = col[1];
+        get<2>(color) = col[2];
+        int size  =  configuration["General"]["size"].as_int_or_die();
 
-        lines.push_back(l1);
-        lines.push_back(l2);
-        return draw2DLines(lines, 1000);
+        Lines2D lines = drawLSystem(l_system(filename),color);
+        return draw2DLines(lines ,size);
     }
     return img::EasyImage();
 }
