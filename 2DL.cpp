@@ -9,7 +9,9 @@
 #include <cmath>
 #include <vector>
 #include <fstream>
+#include <cctype>
 #include "parser/l_parser.h"
+
 
 using namespace std;
 
@@ -131,29 +133,32 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size){
 //parse
 LParser::LSystem2D l_system(const string& filename){
     LParser::LSystem2D l_syst;
-    std::ifstream input_stream(filename);
+    ifstream input_stream(filename);
     input_stream >> l_syst;
     input_stream.close();
     return l_syst;
 }
 
 //returns the L-system string
-string getString(const LParser::LSystem2D &l_system, unsigned int n, string S){
+void getString(const LParser::LSystem2D &l_system, unsigned int n, const string &S, string &k){
 
     string returnString;
     for (auto c: S){
-        if (c != '+' && c != '-')
+        if (isalnum(c)) {
             returnString += l_system.get_replacement(c);
-        else
+        }
+        else if (c == '+' || c == '-')
             returnString += c;
     }
 
-    if (n == 0)
-        return returnString;
+    if (n == 0) {
+        k = returnString;
+        return;
+    }
     else if(n > 0)
-        getString(l_system,n-1,returnString);
-
-    return "";
+        getString(l_system,n-1,returnString,k);
+    else
+        cerr<<"n = "<< n<<" ?"<<endl;
 }
 
 
@@ -163,7 +168,15 @@ Lines2D drawLSystem(const LParser::LSystem2D &l_system, tuple<double,double,doub
     point current_position = {0,0};
     double pi = 3.14159265359;
 
-    string S = getString(l_system,l_system.get_nr_iterations(),l_system.get_initiator());
+    unsigned int iterations = l_system.get_nr_iterations();
+    const string& initiator = l_system.get_initiator();
+
+    cout<< "iterations = "<< iterations<<endl;
+    cout<< "initiator = "<< initiator<<endl;
+    string S;
+    getString(l_system,iterations,initiator,S);
+    cout<<S<<endl;
+
 
     double starting_angle = l_system.get_starting_angle();
     starting_angle = starting_angle*(pi/180);
@@ -180,7 +193,7 @@ Lines2D drawLSystem(const LParser::LSystem2D &l_system, tuple<double,double,doub
     }
 
     for (auto c:S){
-        if (l_system.draw(c)){
+        if (isalnum(c) && l_system.draw(c)){
             point p1 = current_position;
             point p2 = {current_position.x + cos(starting_angle), current_position.y + sin(starting_angle)};
             Line2D line = {p1,p2,{get<0>(color),get<1>(color),get<2>(color)}};

@@ -12,7 +12,7 @@ Draw = {
 # De Regels van het L-Systeem
 Rules = {
 	F -> "FF",
-	X -> "F-((X)+X)+F(+FX)-X"
+	X -> "F-X+X+F+FX-X"
 }
 # De initiële String
 Initiator = "X"

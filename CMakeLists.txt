@@ -18,6 +18,7 @@ set(engine_sources
 	engine.cc
 	ini_configuration.cc
 	parser/l_parser.h
+		parser/l_parser.cc
 )
 
 ############################################################
