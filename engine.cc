@@ -18,14 +18,21 @@ img::EasyImage generate_image(const ini::Configuration &configuration){
     if (configuration["General"]["type"].as_string_or_die() == "2DLSystem") {
         string filename = configuration["2DLSystem"]["inputfile"].as_string_or_die();
         vector<double> col = configuration["2DLSystem"]["color"];
-        tuple <double,double,double> color;
-        get<0>(color) = col[0];
-        get<1>(color) = col[1];
-        get<2>(color) = col[2];
-        int size  =  configuration["General"]["size"].as_int_or_die();
+        vector<double> backcol = configuration["General"]["backgroundcolor"];
 
+        tuple <double,double,double> color;
+        get<0>(color) = col[0] * 255;
+        get<1>(color) = col[1] * 255;
+        get<2>(color) = col[2] * 255;
+
+        tuple <double,double,double> background_color;
+        get<0>(background_color) = backcol[0] * 255;
+        get<1>(background_color) = backcol[1] * 255;
+        get<2>(background_color) = backcol[2] * 255;
+        int size  =  configuration["General"]["size"].as_int_or_die();
+        tuple <double,double,double> c (255,0,0);
         Lines2D lines = drawLSystem(l_system(filename),color);
-        return draw2DLines(lines ,size);
+        return draw2DLines(lines , size, background_color);
     }
     return img::EasyImage();
 }
