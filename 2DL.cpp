@@ -1,38 +1,18 @@
 #include "easy_image.h"
 #include "ini_configuration.h"
 #include <fstream>
-#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <list>
 #include <tuple>
 #include <cmath>
-#include <vector>
 #include <fstream>
 #include <cctype>
 #include "parser/l_parser.h"
+#include "Surface.h"
 
 
-using namespace std;
 
-struct point{
-    double x;
-    double y;
-};
-
-struct color{
-    double red;
-    double green;
-    double blue;
-};
-
-struct Line2D{
-    point p1;
-    point p2;
-    color Color;
-};
-
-using Lines2D = vector<Line2D>;
 
 //draw lines with real coordinates
 img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,double> &background_color){
@@ -162,7 +142,6 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,d
                 image((int)xi, (int)yi).red = line.Color.red;
                 image((int)xi, (int)yi).green = line.Color.green;
                 image((int)xi, (int)yi).blue = line.Color.blue;
-
             }
         }
 
@@ -212,22 +191,45 @@ void getString(const LParser::LSystem2D &l_system, unsigned int n, const string 
             returnString += c;
     }
 
-    if (n == 1) {
+    if (n == 1 || n == 0) {
         k = returnString;
         return;
     }
     else if(n > 0)
         getString(l_system,n-1,returnString,k);
-    else
-        cerr<<"n = "<< n<<" ?"<<endl;
 }
 
-void closed_brackets(point &current_position, double &starting_angle, double &angle, const LParser::LSystem2D &l_system,
-                    string &S, Lines2D &lines, tuple<double, double, double> &color){
+
+//returns a vector of lines
+Lines2D drawLSystem(const LParser::LSystem2D &l_system, tuple<double,double,double> color){
+    Lines2D lines;
+    point current_position = {0,0};
+    double pi = 3.14159265359;
+
+
+    double starting_angle = l_system.get_starting_angle();
+    starting_angle = starting_angle*(pi/180);
+
+    double angle = l_system.get_angle();
+    angle = angle * (pi/180);
+
+    while (angle > 2*pi){
+        angle = angle - 2*pi;
+    }
+
+    while (starting_angle > 2*pi){
+        starting_angle = starting_angle-2*pi;
+    }
+
+
     vector <pair<point,double>> stack;
-    int i = 0;
-    for (auto c:S){
-        i++;
+    unsigned int iterations = l_system.get_nr_iterations();
+    const string& initiator = l_system.get_initiator();
+    string S;
+
+    getString(l_system,iterations,initiator,S);
+
+       for (auto c:S){
         if (isalnum(c)){
             if (l_system.draw(c)) {
                 point p1 = current_position;
@@ -251,48 +253,13 @@ void closed_brackets(point &current_position, double &starting_angle, double &an
         }
         else if (c == '('){
             stack.emplace_back(current_position,starting_angle);
-
         }
         else if (c == ')'){
-            current_position = stack.end()->first;
-            starting_angle = stack.end()->second;
+            current_position = stack.back().first;
+            starting_angle = stack.back().second;
             stack.pop_back();
-            S.erase(S.begin(),S.begin()+i);
-            closed_brackets(current_position, starting_angle, angle, l_system, S,
-                           lines, color);
         }
     }
-}
-
-//returns a vector of lines
-Lines2D drawLSystem(const LParser::LSystem2D &l_system, tuple<double,double,double> color){
-    Lines2D lines;
-    point current_position = {0,0};
-    double pi = 3.14159265359;
-
-    unsigned int iterations = l_system.get_nr_iterations();
-    const string& initiator = l_system.get_initiator();
-
-    string S;
-    getString(l_system,iterations,initiator,S);
-
-    double starting_angle = l_system.get_starting_angle();
-    starting_angle = starting_angle*(pi/180);
-
-    double angle = l_system.get_angle();
-    angle = angle * (pi/180);
-
-    while (angle > 2*pi){
-        angle = angle - 2*pi;
-    }
-
-    while (starting_angle > 2*pi){
-        starting_angle = starting_angle-2*pi;
-    }
-
-
-    closed_brackets(current_position, starting_angle, angle, l_system, S, lines, color);
-
     return lines;
 }
 

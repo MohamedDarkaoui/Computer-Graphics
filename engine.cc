@@ -10,6 +10,7 @@
 #include <cmath>
 #include <vector>
 #include "2DL.cpp"
+#include "3D-Lijntekeningen.cpp"
 using namespace std;
 
 

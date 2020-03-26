@@ -18,8 +18,10 @@ set(engine_sources
 	engine.cc
 	ini_configuration.cc
 	parser/l_parser.h
-		parser/l_parser.cc
-)
+	parser/l_parser.cc
+    Surface.h
+	vector3d.h
+	vector3d.cc)
 
 ############################################################
 # Create an executable
