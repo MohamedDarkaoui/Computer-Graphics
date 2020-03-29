@@ -15,11 +15,11 @@ using namespace std;
 
 
 img::EasyImage generate_image(const ini::Configuration &configuration){
-
+    //2DL
     if (configuration["General"]["type"].as_string_or_die() == "2DLSystem") {
         string filename = configuration["2DLSystem"]["inputfile"].as_string_or_die();
-        vector<double> col = configuration["2DLSystem"]["color"];
-        vector<double> backcol = configuration["General"]["backgroundcolor"];
+        vector<double> col = configuration["2DLSystem"]["color"].as_double_tuple_or_die();
+        vector<double> backcol = configuration["General"]["backgroundcolor"].as_double_tuple_or_die();
 
         tuple <double,double,double> color;
         get<0>(color) = col[0] * 255;
@@ -31,10 +31,100 @@ img::EasyImage generate_image(const ini::Configuration &configuration){
         get<1>(background_color) = backcol[1] * 255;
         get<2>(background_color) = backcol[2] * 255;
         int size  =  configuration["General"]["size"].as_int_or_die();
-        tuple <double,double,double> c (255,0,0);
         Lines2D lines = drawLSystem(l_system(filename),color);
         return draw2DLines(lines , size, background_color);
     }
+
+    //3D lijntekeningen
+    else if (configuration["General"]["type"].as_string_or_die() == "Wireframe"){
+
+        vector<double> backcol = configuration["General"]["backgroundcolor"].as_double_tuple_or_die();
+        tuple <double,double,double> background_color;
+        get<0>(background_color) = backcol[0] * 255;
+        get<1>(background_color) = backcol[1] * 255;
+        get<2>(background_color) = backcol[2] * 255;
+
+        vector<double> eyee = configuration["General"]["eye"].as_double_tuple_or_die();
+        Vector3D eye;
+        eye.x = eyee[0];
+        eye.y = eyee[1];
+        eye.z = eyee[2];
+        int nrFigures =  configuration["General"]["nrFigures"].as_int_or_die();
+
+        vector<vector<tuple<int,int>>> final_point_indexes;
+        Figures3D figures;
+
+
+        for (int i = 0; i < nrFigures; i++){
+            vector<tuple<int,int>> point_indexes;
+            string s = to_string(i);
+            string fig = "Figure" + s;
+
+            double
+            rX = configuration[fig]["rotateX"].as_double_or_die(),
+            rY = configuration[fig ]["rotateY"].as_double_or_die(),
+            rZ = configuration[fig]["rotateZ"].as_double_or_die(),
+            scale = configuration[fig]["scale"].as_double_or_die();
+
+            vector<double>
+            center = configuration[fig]["center"].as_double_tuple_or_die(),
+            col = configuration[fig]["color"].as_double_tuple_or_die();
+
+            tuple <double,double,double> color;
+            get<0>(color) = col[0] * 255;
+            get<1>(color) = col[1] * 255;
+            get<2>(color) = col[2] * 255;
+
+            int nrPoints = configuration[fig]["nrPoints"].as_int_or_die();
+            Figure figure = Figure();
+            Face face;
+
+
+            for (int j = 0; j< nrPoints; j++){
+
+                face.point_indexes.push_back(i);
+
+                string toStr = to_string(j);
+                string strPoint = "point" + toStr;
+
+                vector<double> p = configuration[fig][strPoint].as_double_tuple_or_die();
+
+                Vector3D newPoint = Vector3D::point(p[0],p[1],p[2]);
+
+                figure.points.push_back(newPoint);
+            }
+
+            figure.faces.push_back(face);
+            figure.Color = {get<0>(color),get<1>(color),get<2>(color)};
+
+            applyTransformation(figure,scaleFigure(scale));
+            applyTransformation(figure,rotateX(rX));
+            applyTransformation(figure,rotateX(rY));
+            applyTransformation(figure,rotateX(rZ));
+
+            int nrLines = configuration[fig]["nrLines"].as_int_or_die();
+
+            for (int j = 0; j < nrLines; j++){
+                string toStr = to_string(j);
+                string strLine = "line" + toStr;
+
+                vector<int> k = configuration[fig][strLine].as_int_tuple_or_die();
+
+                tuple<int,int> indexes;
+                get<0>(indexes) = k[0];
+                get<1>(indexes) = k[1];
+
+                point_indexes.push_back(indexes);
+            }
+            figures.push_back(figure);
+            final_point_indexes.push_back(point_indexes);
+        }
+        Lines2D lines = doProjection(figures,final_point_indexes,eye);
+        return draw2DLines(lines,1000,background_color);
+    }
+
+
+
     return img::EasyImage();
 }
 

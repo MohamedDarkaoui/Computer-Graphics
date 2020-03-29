@@ -118,8 +118,8 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,d
             }
         }
 
-        point A{};
-        point B{};
+        point2D A{};
+        point2D B{};
 
         if (line.p1.x <= line.p2.x){
             A = line.p1;
@@ -203,7 +203,7 @@ void getString(const LParser::LSystem2D &l_system, unsigned int n, const string 
 //returns a vector of lines
 Lines2D drawLSystem(const LParser::LSystem2D &l_system, tuple<double,double,double> color){
     Lines2D lines;
-    point current_position = {0,0};
+    point2D current_position = {0,0};
     double pi = 3.14159265359;
 
 
@@ -222,7 +222,7 @@ Lines2D drawLSystem(const LParser::LSystem2D &l_system, tuple<double,double,doub
     }
 
 
-    vector <pair<point,double>> stack;
+    vector <pair<point2D,double>> stack;
     unsigned int iterations = l_system.get_nr_iterations();
     const string& initiator = l_system.get_initiator();
     string S;
@@ -232,8 +232,8 @@ Lines2D drawLSystem(const LParser::LSystem2D &l_system, tuple<double,double,doub
        for (auto c:S){
         if (isalnum(c)){
             if (l_system.draw(c)) {
-                point p1 = current_position;
-                point p2 = {current_position.x + cos(starting_angle), current_position.y + sin(starting_angle)};
+                point2D p1 = current_position;
+                point2D p2 = {current_position.x + cos(starting_angle), current_position.y + sin(starting_angle)};
                 Line2D line = {p1, p2, {get<0>(color), get<1>(color), get<2>(color)}};
                 lines.push_back(line);
                 current_position = p2;

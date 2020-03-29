@@ -9,9 +9,9 @@
 
 using namespace std;
 
-struct point{
+struct point2D{
     double x;
-    double y;
+    double y;;
 };
 
 struct color{
@@ -21,8 +21,8 @@ struct color{
 };
 
 struct Line2D{
-    point p1;
-    point p2;
+    point2D p1;
+    point2D p2;
     color Color;
 };
 
