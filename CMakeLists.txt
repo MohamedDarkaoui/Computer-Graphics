@@ -14,14 +14,15 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${OWN_GXX_FLAGS}")
 # List all sources
 ############################################################
 set(engine_sources
-	easy_image.cc
+	easy_image/easy_image.cc
 	engine.cc
-	ini_configuration.cc
+	ini_config/ini_configuration.cc
 	parser/l_parser.h
 	parser/l_parser.cc
     Surface.h
-	vector3d.h
-	vector3d.cc)
+	vector3d/vector3d.h
+	vector3d/vector3d.cc
+    ZBuffering_Lines/ZBuffering_lines.h)
 
 ############################################################
 # Create an executable

@@ -1,15 +1,7 @@
-#include "easy_image.h"
-#include "ini_configuration.h"
-#include <fstream>
-#include <stdexcept>
-#include <string>
-#include <list>
+#include "../easy_image/easy_image.h"
 #include <tuple>
 #include <cmath>
-#include <fstream>
-#include <cctype>
-#include "parser/l_parser.h"
-#include "Surface.h"
+#include "../Surface.h"
 
 Matrix scaleFigure (const double scale){
     Matrix m;
@@ -112,44 +104,35 @@ point2D doProjection(const Vector3D &point, const double d = 1){
 }
 
 
-Lines2D doProjection(Figures3D &figures, const vector<vector<tuple<int,int>>> &point_indexes,
-                    const Vector3D &eyepoint,const double d = 1){
-
+Lines2D doProjection(Figures3D &figures, const Vector3D &eyepoint, const double d = 1){
 
     Lines2D lines;
-    for (unsigned int i = 0; i < figures.size(); i++){
-        applyTransformation(figures[i],eyepointTrans(eyepoint));
-        for (unsigned int j = 0; j < point_indexes[i].size(); j++){
-            point2D p1 = doProjection(figures[i].points[get<0>(point_indexes[i][j])],d);
-            point2D p2 = doProjection(figures[i].points[get<1>(point_indexes[i][j])],d);
 
-            Line2D line = {p1,p2,figures[i].Color};
-            lines.push_back(line);
+    for (auto &figure : figures) {
+        applyTransformation(figure, eyepointTrans(eyepoint));
+        for (auto &face : figure.faces) {
+            //connect all points
+            for (unsigned int i = 0; i < face.point_indexes.size() - 1 ; i++) {
+                point2D p1 = doProjection(figure.points[face.point_indexes[i]], d);
+                point2D p2 = doProjection(figure.points[face.point_indexes[i + 1]], d);
+
+                Line2D line = {p1, p2, figure.Color};
+                line.z1 = figure.points[face.point_indexes[i]].z;
+                line.z2 = figure.points[face.point_indexes[i + 1]].z;
+                lines.push_back(line);
+            }
+            //connect the first point with the last
+            if (figure.draw_extra_line){
+                point2D p1 = doProjection(figure.points[face.point_indexes[face.point_indexes.size()-1]], d);
+                point2D p2 = doProjection(figure.points[face.point_indexes[0]], d);
+                Line2D line = {p1, p2, figure.Color};
+                line.z1 = figure.points[face.point_indexes[face.point_indexes.size()-1]].z;
+                line.z2 = figure.points[face.point_indexes[0]].z;
+                lines.push_back(line);
+            }
         }
     }
-
     return lines;
 }
-
-
-//Lines2D doProjection(const Figures3D &figures){
-//    Lines2D lines;
-//
-//    for (auto figure: figures){
-//        for (auto face: figure.faces){
-//            for (unsigned int i = 0; i < face.point_indexes.size()-1; i++){
-//                point2D p1 = doProjection(figure.points[face.point_indexes[i]]);
-//                point2D p2 = doProjection(figure.points[face.point_indexes[i+1]]);
-//                lines.push_back({p1,p2,figure.Color});
-//            }
-//            lines.push_back({doProjection(figure.points[face.point_indexes[0]]),
-//                             doProjection(figure.points[face.point_indexes[face.point_indexes.size()-1]]),
-//                             figure.Color});
-//        }
-//    }
-//    return lines;
-//}
-
-
 
 

@@ -1,18 +1,13 @@
-#include "easy_image.h"
-#include "ini_configuration.h"
+#include "../easy_image/easy_image.h"
 #include <fstream>
 #include <stdexcept>
 #include <string>
 #include <list>
 #include <tuple>
 #include <cmath>
-#include <fstream>
 #include <cctype>
-#include "parser/l_parser.h"
-#include "Surface.h"
-
-
-
+#include "../parser/l_parser.h"
+#include "../Surface.h"
 
 //draw lines with real coordinates
 img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,double> &background_color){
@@ -59,10 +54,10 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,d
 
     //move the lines
     double
-    DC_x = d * (x_min + x_max)/2,
-    DC_y = d * (y_min + y_max)/2,
-    dx = (image_x/2)  - DC_x,
-    dy = (image_y/2) - DC_y;
+            DC_x = d * (x_min + x_max)/2,
+            DC_y = d * (y_min + y_max)/2,
+            dx = (image_x/2)  - DC_x,
+            dy = (image_y/2) - DC_y;
 
     for (Line2D &line: lines){
         line.p1.x += dx;
@@ -86,14 +81,14 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,d
     for (Line2D line: lines){
         if (line.p1.y == line.p2.y){
             if (line.p1.x < line.p2.x){
-                for (int i = (int)line.p1.x; i< line.p2.x; i++){
+                for (int i = (int)line.p1.x; i < line.p2.x; i++){
                     image(i,(int)line.p2.y).red = line.Color.red;
                     image(i,(int)line.p2.y).green = line.Color.green;
                     image(i,(int)line.p2.y).blue = line.Color.blue;
                 }
             }
-            else{
-                for (int i = (int)line.p2.x; i< line.p1.x; i++){
+            else {
+                for (int i = (int)line.p2.x; i < line.p1.x; i++){
                     image(i,(int)line.p2.y).red = line.Color.red;
                     image(i,(int)line.p2.y).green = line.Color.green;
                     image(i,(int)line.p2.y).blue = line.Color.blue;
@@ -103,14 +98,14 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,d
 
         else if (line.p1.x == line.p2.x){
             if (line.p1.y<line.p2.y){
-                for (int i = (int)line.p1.y; i< line.p2.y; i++){
+                for (int i = (int)line.p1.y; i < line.p2.y; i++){
                     image((int)line.p2.x,i).red = line.Color.red;
                     image((int)line.p2.x,i).green = line.Color.green;
                     image((int)line.p2.x,i).blue = line.Color.blue;
                 }
             }
-            else{
-                for (int i = (int)line.p2.y; i< line.p1.y; i++){
+            else {
+                for (int i = (int)line.p2.y; i < line.p1.y; i++){
                     image((int)line.p2.x,i).red = line.Color.red;
                     image((int)line.p2.x,i).green = line.Color.green;
                     image((int)line.p2.x,i).blue = line.Color.blue;
@@ -134,8 +129,8 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,d
         if (B.x != A.x) {
             m = (B.y - A.y)/(B.x - A.x);
         }
-        if ((0 < m && m <=1)||(-1 <= m && m <0)){
-            for (int i = 0; i< B.x -  A.x; i++){
+        if ((0 < m && m <=1) || (-1 <= m && m <0)){
+            for (int i = 0; i < B.x -  A.x; i++){
                 double xi = A.x + i;
                 double yi = round(A.y + m*i);
 
@@ -169,97 +164,3 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,d
     }
     return image;
 }
-
-//parse
-LParser::LSystem2D l_system(const string& filename){
-    LParser::LSystem2D l_syst;
-    ifstream input_stream(filename);
-    input_stream >> l_syst;
-    input_stream.close();
-    return l_syst;
-}
-
-//returns the L-system string
-void getString(const LParser::LSystem2D &l_system, unsigned int n, const string &S, string &k){
-
-    string returnString;
-    for (auto c: S){
-        if (isalnum(c)) {
-            returnString += l_system.get_replacement(c);
-        }
-        else if (c == '+' || c == '-' || c == '(' || c == ')')
-            returnString += c;
-    }
-
-    if (n == 1 || n == 0) {
-        k = returnString;
-        return;
-    }
-    else if(n > 0)
-        getString(l_system,n-1,returnString,k);
-}
-
-
-//returns a vector of lines
-Lines2D drawLSystem(const LParser::LSystem2D &l_system, tuple<double,double,double> color){
-    Lines2D lines;
-    point2D current_position = {0,0};
-    double pi = 3.14159265359;
-
-
-    double starting_angle = l_system.get_starting_angle();
-    starting_angle = starting_angle*(pi/180);
-
-    double angle = l_system.get_angle();
-    angle = angle * (pi/180);
-
-    while (angle > 2*pi){
-        angle = angle - 2*pi;
-    }
-
-    while (starting_angle > 2*pi){
-        starting_angle = starting_angle-2*pi;
-    }
-
-
-    vector <pair<point2D,double>> stack;
-    unsigned int iterations = l_system.get_nr_iterations();
-    const string& initiator = l_system.get_initiator();
-    string S;
-
-    getString(l_system,iterations,initiator,S);
-
-       for (auto c:S){
-        if (isalnum(c)){
-            if (l_system.draw(c)) {
-                point2D p1 = current_position;
-                point2D p2 = {current_position.x + cos(starting_angle), current_position.y + sin(starting_angle)};
-                Line2D line = {p1, p2, {get<0>(color), get<1>(color), get<2>(color)}};
-                lines.push_back(line);
-                current_position = p2;
-            }
-        }
-        else if (c != '+' && c != '-' && c != '(' && c != ')'){
-            if (!l_system.draw(c)) {
-                current_position.x = current_position.x + cos(starting_angle);
-                current_position.y = current_position.y + sin(starting_angle);
-            }
-        }
-        else if (c == '+'){
-            starting_angle += angle;
-        }
-        else if (c == '-'){
-            starting_angle -= angle;
-        }
-        else if (c == '('){
-            stack.emplace_back(current_position,starting_angle);
-        }
-        else if (c == ')'){
-            current_position = stack.back().first;
-            starting_angle = stack.back().second;
-            stack.pop_back();
-        }
-    }
-    return lines;
-}
-
