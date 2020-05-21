@@ -77,90 +77,17 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,d
             image(i,j).blue = get<2>(background_color);
         }
     }
+
     //draw the lines
     for (Line2D line: lines){
-        if (line.p1.y == line.p2.y){
-            if (line.p1.x < line.p2.x){
-                for (int i = (int)line.p1.x; i < line.p2.x; i++){
-                    image(i,(int)line.p2.y).red = line.Color.red;
-                    image(i,(int)line.p2.y).green = line.Color.green;
-                    image(i,(int)line.p2.y).blue = line.Color.blue;
-                }
-            }
-            else {
-                for (int i = (int)line.p2.x; i < line.p1.x; i++){
-                    image(i,(int)line.p2.y).red = line.Color.red;
-                    image(i,(int)line.p2.y).green = line.Color.green;
-                    image(i,(int)line.p2.y).blue = line.Color.blue;
-                }
-            }
-        }
 
-        else if (line.p1.x == line.p2.x){
-            if (line.p1.y<line.p2.y){
-                for (int i = (int)line.p1.y; i < line.p2.y; i++){
-                    image((int)line.p2.x,i).red = line.Color.red;
-                    image((int)line.p2.x,i).green = line.Color.green;
-                    image((int)line.p2.x,i).blue = line.Color.blue;
-                }
-            }
-            else {
-                for (int i = (int)line.p2.y; i < line.p1.y; i++){
-                    image((int)line.p2.x,i).red = line.Color.red;
-                    image((int)line.p2.x,i).green = line.Color.green;
-                    image((int)line.p2.x,i).blue = line.Color.blue;
-                }
-            }
-        }
+        img::Color color;
+        color.red = line.Color.red;
+        color.blue = line.Color.blue;
+        color.green = line.Color.green;
+        image.draw_line((unsigned int)line.p1.x,(unsigned int)line.p1.y,(unsigned int)line.p2.x,
+                (unsigned int)line.p2.y,color);
 
-        point2D A{};
-        point2D B{};
-
-        if (line.p1.x <= line.p2.x){
-            A = line.p1;
-            B = line.p2;
-        }
-        else {
-            B = line.p1;
-            A = line.p2;
-        }
-
-        double m = 0;
-        if (B.x != A.x) {
-            m = (B.y - A.y)/(B.x - A.x);
-        }
-        if ((0 < m && m <=1) || (-1 <= m && m <0)){
-            for (int i = 0; i < B.x -  A.x; i++){
-                double xi = A.x + i;
-                double yi = round(A.y + m*i);
-
-                image((int)xi, (int)yi).red = line.Color.red;
-                image((int)xi, (int)yi).green = line.Color.green;
-                image((int)xi, (int)yi).blue = line.Color.blue;
-            }
-        }
-
-        else if (m > 1){
-            for (int i = 0; i < B.y - A.y; i++){
-                double xi = round(A.x + i/m);
-                double yi = A.y + i;
-
-                image((int)xi, (int)yi).red = line.Color.red;
-                image((int)xi, (int)yi).green = line.Color.green;
-                image((int)xi, (int)yi).blue = line.Color.blue;
-            }
-        }
-        else if (m < -1){
-            for (int i = 0; i <A.y - B.y; i++){
-                double xi = round(A.x - i/m);
-                double yi = A.y - i;
-
-                image((int)xi, (int)yi).red = line.Color.red;
-                image((int)xi, (int)yi).green = line.Color.green;
-                image((int)xi, (int)yi).blue = line.Color.blue;
-
-            }
-        }
     }
     return image;
 }
