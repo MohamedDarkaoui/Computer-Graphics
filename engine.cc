@@ -10,7 +10,7 @@
 #include <vector>
 #include "2D/2DL.cpp"
 #include "2D/Draw_2D_lines.cpp"
-//#include "3D/3D-Lijntekeningen.cpp"
+#include "ZBuffering_Triangles/ZBuffering_Triangles.cpp"
 #include "3D/3D-Lichamen.cpp"
 #include "3D/3DL.cpp"
 #include "ZBuffering_Lines/ZBuffering_lines.h"
@@ -42,7 +42,8 @@ img::EasyImage generate_image(const ini::Configuration &configuration){
     }
 
     else if (configuration["General"]["type"].as_string_or_die() == "Wireframe" ||
-            configuration["General"]["type"].as_string_or_die() == "ZBufferedWireframe"){
+            configuration["General"]["type"].as_string_or_die() == "ZBufferedWireframe" ||
+            configuration["General"]["type"].as_string_or_die() == "ZBuffering"){
 
         vector<double> backcol = configuration["General"]["backgroundcolor"].as_double_tuple_or_die();
         tuple <double,double,double> background_color;
@@ -56,7 +57,6 @@ img::EasyImage generate_image(const ini::Configuration &configuration){
         eye.y = eyee[1];
         eye.z = eyee[2];
         int nrFigures =  configuration["General"]["nrFigures"].as_int_or_die();
-
 
         Figures3D figures;
 
@@ -91,7 +91,6 @@ img::EasyImage generate_image(const ini::Configuration &configuration){
 
             Figure figure = Figure();
 
-
             if (configuration[fig]["type"].as_string_or_die() == "LineDrawing") {
 
                 int nrPoints = configuration[fig]["nrPoints"].as_int_or_die();
@@ -107,7 +106,6 @@ img::EasyImage generate_image(const ini::Configuration &configuration){
 
                     figure.points.push_back(newPoint);
                 }
-
 
                 int nrLines = configuration[fig]["nrLines"].as_int_or_die();
 
@@ -186,7 +184,15 @@ img::EasyImage generate_image(const ini::Configuration &configuration){
         if (configuration["General"]["type"].as_string_or_die() == "ZBufferedWireframe"){
             return draw_Zbuf_Lines(lines,size,background_color);
         }
-        return draw2DLines(lines,size,background_color);
+        else if (configuration["General"]["type"].as_string_or_die() == "Wireframe"){
+            return draw2DLines(lines,size,background_color);
+        }
+
+        else if (configuration["General"]["type"].as_string_or_die() == "ZBuffering") {
+            map<string,double> info = projection(lines,size);
+            return draw_ZBuf_Triangles(figures,info["image_x"],info["image_y"],info["d"],info["dx"],info["dy"]);
+        }
+
     }
 
     return img::EasyImage();

@@ -49,7 +49,6 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size, tuple<double,double,d
         line.p1.y *= d;
         line.p2.x *= d;
         line.p2.y *= d;
-
     }
 
     //move the lines
