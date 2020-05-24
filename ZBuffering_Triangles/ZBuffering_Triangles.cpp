@@ -8,13 +8,11 @@ Figures3D triangulate(Figures3D &figures){
     for (const Figure& figure : figures){
         Figure figure1 = Figure();
         for (const Face& face : figure.faces){
-           // if (face.point_indexes.size() > 3) {
-                for (unsigned int i = 1; i < face.point_indexes.size() - 1; i++) {
-                    Face face1;
-                    face1.point_indexes = {face.point_indexes[0], face.point_indexes[i], face.point_indexes[i + 1]};
-                    figure1.faces.push_back(face1);
-                }
-            //}
+            for (unsigned int i = 1; i < face.point_indexes.size() - 1; i++) {
+                Face face1;
+                face1.point_indexes = {face.point_indexes[0], face.point_indexes[i], face.point_indexes[i + 1]};
+                figure1.faces.push_back(face1);
+            }
         }
         figure1.points = figure.points;
         figure1.Color = figure.Color;
@@ -175,7 +173,28 @@ void draw_ZBuf_triangle(ZBuffer &buffer, img::EasyImage &image, Vector3D const& 
         xr = (int)round(max - 0.5);
 
         for (int i = xl; i <= xr; i++){
-            image(i,y) = color;
+            double xg = (_A.x + _B.x + _C.x)/3;
+            double yg = (_A.y + _B.y + _C.y)/3;
+            double _zg = 1/(3*A.z) + 1/(3*B.z) + 1/(3*C.z);
+
+            Vector3D u = B - A;
+            Vector3D v = C - A;
+
+            double w1 = u.y * v.z - u.z * v.y;
+            double w2 = u.z * v.x - u.x * v.z;
+            double w3 = u.x * v.y - u.y * v.x;
+
+            double k = w1 * A.x + w2 * A.y + w3 * A.z;
+
+            double dzdx = w1/(-d*k);
+            double dzdy = w2/(-d*k);
+
+            double _z = 1.0001 * _zg + (i - xg) * dzdx + (y - yg) * dzdy;
+
+            if (buffer[i][y] >= _z){
+                buffer[i][y] = _z;
+                image(i,y) = color;
+            }
         }
     }
 }

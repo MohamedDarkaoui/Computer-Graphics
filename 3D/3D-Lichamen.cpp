@@ -307,6 +307,20 @@ Figure createCylinder(const int n, const double h){
         figure.faces.push_back(face);
     }
 
+    Face face2;
+
+    for (int i = 0; i < n; i++){
+        face2.point_indexes.push_back(n);
+    }
+
+    Face face3;
+
+    for (int i = n; i < 2*n; i++){
+        face3.point_indexes.push_back(i);
+    }
+
+    figure.faces.push_back(face2);
+    figure.faces.push_back(face3);
     return figure;
 }
 
